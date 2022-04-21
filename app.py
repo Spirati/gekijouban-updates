@@ -1,5 +1,7 @@
-# for documentation
+# for documentation + util
 from typing import List, Tuple
+from dotenv import load_dotenv
+from os import getenv
 
 # for processing website
 from bs4 import BeautifulSoup
@@ -10,6 +12,8 @@ from datetime import datetime
 import hashlib
 
 from db import DbHandler
+
+load_dotenv()
 
 """
 Returns:
@@ -49,6 +53,8 @@ if __name__ == "__main__":
         if len(new_showings) == 0:
             print("No new showings added")
         else:
-            print(f"{len(new_showings)} new showings!")
+            s = f"{len(new_showings)} new showings!"
             for _, theater, location, __ in new_showings:
-                print(f"{theater} in {location}")
+                s += f"\n{theater} in *{location}*"
+            requests.post(f"https://api.telegram.org/bot{getenv('GKJB_TELEGRAM_TOKEN')}/sendMessage?chat_id={getenv('GKJB_CHAT_ID')}&parse_mode=markdown&text={s}")
+
