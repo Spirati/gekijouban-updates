@@ -23,9 +23,11 @@ Returns:
     location: city, state
     found: today's date in ISO format for convenience
 """
+listing_url = "https://www.sentaifilmworks.com/a/news/book-your-ticket-to-see-revue-starlight-the-movie-in-theaters"
+
 def get_showings(today) -> List[Tuple[str, str, str, str]]:
     # get website
-    req = requests.get("https://www.sentaifilmworks.com/a/news/book-your-ticket-to-see-revue-starlight-the-movie-in-theaters")
+    req = requests.get(listing_url)
     html = req.text
     soup = BeautifulSoup(html, features="html5lib")
 
@@ -50,11 +52,12 @@ if __name__ == "__main__":
         db.executemany("insert or ignore into showings (id, theater, location, added) values (?, ?, ?, ?);", showings)
         db.execute("select * from showings where added=:date;", {"date": today})
         new_showings = db.fetchall()
+        s = ""
         if len(new_showings) == 0:
-            print("No new showings added")
+            s = f"No new [showings]({listing_url}) added"
         else:
-            s = f"{len(new_showings)} new showings!"
+            s = f"{len(new_showings)} new [showings]({listing_url})!"
             for _, theater, location, __ in new_showings:
                 s += f"\n{theater} in *{location}*"
-            requests.post(f"https://api.telegram.org/bot{getenv('GKJB_TELEGRAM_TOKEN')}/sendMessage?chat_id={getenv('GKJB_CHAT_ID')}&parse_mode=markdown&text={s}")
+        requests.post(f"https://api.telegram.org/bot{getenv('GKJB_TELEGRAM_TOKEN')}/sendMessage?chat_id={getenv('GKJB_CHAT_ID')}&parse_mode=markdown&text={s}")
 
